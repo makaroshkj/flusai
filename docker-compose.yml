@@ -1,0 +1,23 @@
+
+version: '3.2'
+services:
+  tsduck-scte:
+    image: makaroshkj/ssai-duck:3.16
+    container_name: ssai-duck
+    network_mode: host
+    volumes:
+      - ./ssai-duck:/root
+    command: >
+             /bin/bash -c "/root/splice.sh & /root/ssai-tsp.sh"
+    restart: always
+    tty: true
+  flussonic-scte:
+    image: flussonic/flussonic:latest
+    container_name: ssai-flussonic
+    network_mode: host
+    volumes:
+      - ./flussonic:/etc/flussonic
+    environment:
+      - LICENSE_KEY=PASTE_YOUR_LICENSE_KEY_HERE
+    restart: always
+    tty: true

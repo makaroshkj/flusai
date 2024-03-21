@@ -1,0 +1,10 @@
+{
+    "ad_inject":{
+      "v":2,
+      "preroll":[
+        "vod/ad.mp4"
+      ],
+      "midroll_insert_by":"splicing",
+      "midroll": ["vod/ad.mp4"]
+    }
+  }
