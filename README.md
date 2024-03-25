@@ -97,7 +97,7 @@ stream flusai {
 * Paste your `LICENSE_KEY` in the `docker-compose.yml`
 * Run docker compose
 ```
-docker compose up -d
+docker-compose up -d
 ```
 * Play HLS stream `http://localhost:8888/flusai/index.m3u8`
 
