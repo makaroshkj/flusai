@@ -1,7 +1,7 @@
-This is trivial example of server-side ad insertion (SSAI) in Flussonic based on SCTE-35 markers. A more detailed description can be found in the documentation [https://flussonic.com/doc/iptv-ads-technologies/].
+This is a simple illustration of Flussonic's server-side ad insertion (SSAI) using SCTE-35 markers. A more detailed description can be found in the [documentation](https://flussonic.com/doc/iptv-ads-technologies/).
 
 **How it works**:
-
+```mermaid
 flowchart LR;
     tsduck(tsduck);
     auth(authorization);
@@ -12,10 +12,11 @@ flowchart LR;
     auth-->|3 HTTP/200: ad.mp4|flussonic;
     tsduck-->|4 push scte-35|flussonic;
     flussonic-->|5 HTTP/200: hls/scte|play;
+```
 
 1. Сlient requests HLS playlist with `token=bob`
 2. Flussonic requests auth backend with `token=bob`
-3. Auth backend authorizes the client, and returns a list of ad videos for insertion. Response of auth backend:
+3. Auth backend authorizes the client, and returns a list of ad videos for insertion. The auth backend's response:
 ```json
 {
    "ad_inject":{
@@ -33,7 +34,7 @@ flowchart LR;
 `preroll` is the ad video at the start of playback, and `midroll` is the ad video that will be inserted into the HLS stream when SCTE-35 splice_insert appears on input.
 
 4. SCTE-35 splice_insert event arrives
-5. Flussonic packages and inserts ad videos into the main HLS stream using information from the SCTE-35 event. Сient sees in the player seamless switching between main content and ad.
+5. Flussonic packages and inserts ad videos into the main HLS stream using information from the SCTE-35 event. Сlient observes in the player seamless switching between main content and ad.
 
 It is important to mention that Flussonic packages segments in such a way that the URIs of segments with ads are indistinguishable from the URIs of segments with the main content:
 ```
@@ -55,13 +56,14 @@ The ad blocking using a plugin becomes very diffcult and unprofitable because re
 
 
 **Video pipeline**:
-
+```mermaid
 flowchart LR;
     tsduck(tsduck);
     flussonic(flussonic);
-    play(Player);
+    play(player);
     tsduck-->|udp/ts scte-35|flussonic;
     flussonic-->|hls|play;
+```
 
 * Flussonic uses `rick.mp4` file in a loop, and pushes udp/ts to `udp://224.2.2.2:2222`:
 ```
@@ -71,9 +73,9 @@ stream flusai-input {
 }
 ```
 This is the source of the main content
-* Tsduck captures `udp://224.2.2.2:3333`, generates the separate SCTE-35 TS PID and injects splice_insert event every 60 seconds:
+* Tsduck ingests `udp://224.2.2.2:2222`, generates the separate SCTE-35 TS PID, injects splice_insert event every 60 seconds and pushes stream to `udp://224.2.2.2:3333`:
 ```
-tsp --add-input-stuffing 1/10 -I ip ${source} -P pmt --add-pid 301/0x86 -P spliceinject --inject-interval 2000 --service 0x3e8 --file splice.xml -O ip ${destination}
+tsp --add-input-stuffing 1/10 -I ip udp://224.2.2.2:2222 -P pmt --add-pid 301/0x86 -P spliceinject --inject-interval 2000 --service 0x3e8 --file splice.xml -O ip udp://224.2.2.2:3333
 ```
 This is just a way to create a stream with SCTE-35 events. It is possible to use any source with SCTE-35 events.
 * Flussonic ingests `udp://224.2.2.2:3333`, parses SCTE-35 events, transcodes to MBR stream and packages the HLS:
@@ -97,7 +99,7 @@ stream flusai {
 ```
 docker compose up -d
 ```
-* Play HLS stream `http://localhost:8888/flusai/index.m3i9
+* Play HLS stream `http://localhost:8888/flusai/index.m3u8`
 
 Enjoy seamless switching between main content and ad video :)
 
